@@ -3,9 +3,9 @@ from typing import List
 
 def change_format(date: str) -> str:
     """
-    Get the date from a datime object converted into a string
+    Get the date from a datetime object and convert it into a string
     """
-    return date[:10]
+    return str(date)[:10]
 
 def join_light_alarms_readings_meteo(
         light_errors: pd.DataFrame, 
@@ -28,7 +28,10 @@ def join_light_alarms_readings_meteo(
     eboxes_powerActivePeak.rename(columns = {"id": "ebox_id"}, inplace=True)
     eboxes_powerActive.rename(columns = {"id": "ebox_id"}, inplace=True)
 
+    # Change date formats:
     meteo['dated'] = meteo['dated'].apply(change_format)
+    for week in ["week-4", "week-3", "week-2", "week-1", "current_week"]:
+        light_errors[week] = light_errors[week].apply(lambda x: str(x))
 
     # joins for the dataset eboxes_powerReactivePeak:
     for week in ["week-4", "week-3", "week-2", "week-1", "current_week"]:
@@ -92,42 +95,44 @@ def join_light_alarms_readings_meteo(
                     },
             inplace=True)
 
-        # joins for the dataset meteo_canyelles:
-        for week in ["week-4", "week-3", "week-2", "week-1", "current_week"]:
+    # joins for the dataset meteo_canyelles:
+    for week in ["week-4", "week-3", "week-2", "week-1", "current_week"]:
 
-            light_errors = pd.merge(
-                light_errors, 
-                meteo.rename(columns={"dated": week}), 
-                on=[week],
-                how="left"
-            )
-            
-            light_errors.rename(
-                columns={
-                    "Dew_max_max": "Dew_max_max_" + week,
-                    "Hum_min_min": "Hum_min_min_" + week,
-                    "Wind_max_max": "Wind_max_max_" + week,
-                    "Temp_max_max": "Temp_max_max_" + week,
-                    "Temp_min_min": "Temp_min_min_" + week,
-                    "Pres_min_min": "Pres_min_min_" + week,
-                    "Wind_avg_mean": "Wind_avg_avg_" + week,
-                    "Wind_avg_std": "Wind_avg_std_" + week,
-                    "Hum_avg_mean": "Hum_avg_avg_" + week,
-                    "Dew_avg_mean": "Dew_avg_avg_" + week,
-                    "Dew_avg_std": "Dew_avg_std_" + week,
-                    "Hum_max_max": "Hum_max_max_" + week,
-                    "Temp_avg_mean": "Temp_avg_avg_" + week,
-                    "Temp_avg_std": "Temp_avg_std_" + week,
-                    "Pres_max_max": "Pres_max_max_" + week,
-                    "Pres_avg_mean": "Pres_avg_avg_" + week,
-                    "Pres_avg_std": "Pres_avg_std_" + week,
-                    "Precipitation_mean": "Precipitation_avg_" + week,
-                    "Precipitation_sum": "Precipitation_sum_" + week,
-                    "Dew_min_min": "Dew_min_min_" + week,
-                    "Wind_min_min": "Wind_min_min_" + week,
-                    "Hum_avg_std": "Hum_avg_std_" + week
-                        },
-                inplace=True)
+        light_errors = pd.merge(
+            light_errors, 
+            meteo.rename(columns={"dated": week}), 
+            on=[week],
+            how="left"
+        )
+        
+        light_errors.rename(
+            columns={
+                "Dew_max_max": "Dew_max_max_" + week,
+                "Hum_min_min": "Hum_min_min_" + week,
+                "Wind_max_max": "Wind_max_max_" + week,
+                "Temp_max_max": "Temp_max_max_" + week,
+                "Temp_min_min": "Temp_min_min_" + week,
+                "Pres_min_min": "Pres_min_min_" + week,
+                "Wind_avg_mean": "Wind_avg_avg_" + week,
+                "Wind_avg_std": "Wind_avg_std_" + week,
+                "Hum_avg_mean": "Hum_avg_avg_" + week,
+                "Dew_avg_mean": "Dew_avg_avg_" + week,
+                "Dew_avg_std": "Dew_avg_std_" + week,
+                "Hum_max_max": "Hum_max_max_" + week,
+                "Temp_avg_mean": "Temp_avg_avg_" + week,
+                "Temp_avg_std": "Temp_avg_std_" + week,
+                "Pres_max_max": "Pres_max_max_" + week,
+                "Pres_avg_mean": "Pres_avg_avg_" + week,
+                "Pres_avg_std": "Pres_avg_std_" + week,
+                "Precipitation_mean": "Precipitation_avg_" + week,
+                "Precipitation_sum": "Precipitation_sum_" + week,
+                "Dew_min_min": "Dew_min_min_" + week,
+                "Wind_min_min": "Wind_min_min_" + week,
+                "Hum_avg_std": "Hum_avg_std_" + week
+                    },
+            inplace=True)
+    
+    return light_errors
             
 def join_eboxes_alarms_readings_meteo(
         eboxes_alarms: pd.DataFrame, 
@@ -243,6 +248,8 @@ def join_eboxes_alarms_readings_meteo(
                 "Hum_avg_std": "Hum_avg_std_" + week
                     },
             inplace=True)
+    
+    return eboxes_alarms
         
 def final_municipality_join(municipality_names: List[str], municipality_dataframes: List[pd.DataFrame]):
     """

@@ -16,7 +16,7 @@ def first_lights_preprocess(light_alarms: pd.DataFrame, min_date = "1982-01-04",
 
     light_alarms["dated"] = pd.to_datetime(light_alarms["dated"])
 
-    light_alarms.loc[(min_date <= light_alarms["dated"]) & (light_alarms["dated"] <= max_date)]
+    light_alarms = light_alarms.loc[(min_date <= light_alarms["dated"]) & (light_alarms["dated"] <= max_date)]
 
     return light_alarms
 
@@ -33,7 +33,7 @@ def first_eboxes_preprocess(eboxes_alarms: pd.DataFrame, min_date = "1982-01-04"
 
     eboxes_alarms["dated"] = pd.to_datetime(eboxes_alarms["dated"])
 
-    eboxes_alarms.loc[(min_date <= eboxes_alarms["dated"]) & (eboxes_alarms["dated"] <= max_date)]
+    eboxes_alarms = eboxes_alarms.loc[(min_date <= eboxes_alarms["dated"]) & (eboxes_alarms["dated"] <= max_date)]
 
     return eboxes_alarms
 

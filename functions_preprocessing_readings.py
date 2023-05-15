@@ -14,9 +14,10 @@ def split_readings(readings: pd.DataFrame) -> tuple[pd.DataFrame]:
     return (powerReactive, powerActive, powerReactivePeak, powerActivePeak)
 
 
-def pre_power(power: pd.DataFrame) -> pd.DataFrame:
+def pre_power(power: pd.DataFrame, type_reading: str) -> pd.DataFrame:
     """
-    Preprocessing of the datasets powerReactive and powerActive
+    Preprocessing of the datasets powerReactive and powerActive. Takes as 
+    arguments the readings and the type: Active or Reactive
     """
     # to date:
     power["dated"] = pd.to_datetime(power["dated"])
@@ -30,11 +31,19 @@ def pre_power(power: pd.DataFrame) -> pd.DataFrame:
     p2_df = power.loc[power["component"] == "p2"].drop("component", axis=1)
     p3_df = power.loc[power["component"] == "p3"].drop("component", axis=1)
 
-    # Change the name of the column "value" to "value_" + "measure" so when we do the merge later
-    sum_df.rename(columns = {"value": "powerReactive_sum"}, inplace=True)
-    p1_df.rename(columns = {"value": "powerReactive_p1"}, inplace=True)
-    p2_df.rename(columns = {"value": "powerReactive_p2"}, inplace=True)
-    p3_df.rename(columns = {"value": "powerReactive_p3"}, inplace=True)
+    if type_reading == "Active":
+        # Change the name of the column "value" to "value_" + "measure" so when we do the merge later
+        sum_df.rename(columns = {"value": "powerActive_sum"}, inplace=True)
+        p1_df.rename(columns = {"value": "powerActive_p1"}, inplace=True)
+        p2_df.rename(columns = {"value": "powerActive_p2"}, inplace=True)
+        p3_df.rename(columns = {"value": "powerActive_p3"}, inplace=True)
+       
+    if type_reading == "Reactive":
+        # Change the name of the column "value" to "value_" + "measure" so when we do the merge later
+        sum_df.rename(columns = {"value": "powerReactive_sum"}, inplace=True)
+        p1_df.rename(columns = {"value": "powerReactive_p1"}, inplace=True)
+        p2_df.rename(columns = {"value": "powerReactive_p2"}, inplace=True)
+        p3_df.rename(columns = {"value": "powerReactive_p3"}, inplace=True)
 
     # Group for and drop the column
     sum_df = sum_df.groupby(["id", pd.Grouper(key="dated", freq="W")]).mean().reset_index()
@@ -62,9 +71,10 @@ def pre_power(power: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def pre_power_peak(power_peak: pd.DataFrame) -> pd.DataFrame:
+def pre_power_peak(power_peak: pd.DataFrame, type_reading: str) -> pd.DataFrame:
     """
-    Preprocessing of the datasets powerReactivePeak and powerActivePeak
+    Preprocessing of the datasets powerReactivePeak and powerActivePeak. Takes as 
+    arguments the readings and the type: Active or Reactive
     """
 
     power_peak["dated"] = pd.to_datetime(power_peak["dated"])
@@ -72,9 +82,14 @@ def pre_power_peak(power_peak: pd.DataFrame) -> pd.DataFrame:
     # Eliminate useless columns:
     power_peak.drop(["componentid", "reading"], axis=1, inplace=True)
 
-    # Change the name of the column "value" to "ActivePeak"
-    power_peak.rename(columns = {"value": "ActivePeak"}, inplace=True)
-
+    if type_reading == "Active":
+        # Change the name of the column "value" to "ActivePeak"
+        power_peak.rename(columns = {"value": "ActivePeak"}, inplace=True)
+    
+    if type_reading == "Reactive":
+        # Change the name of the column "value" to "ReactivePeak"
+        power_peak.rename(columns = {"value": "ReactivePeak"}, inplace=True)
+    
     # Group:
     power_peak = power_peak.groupby(["id", pd.Grouper(key="dated", freq="W")]).mean().reset_index()
 
