@@ -148,6 +148,8 @@ def join_eboxes_alarms_readings_meteo(
 
     #Change meteo date format
     meteo['dated'] = meteo['dated'].apply(change_format)
+    for week in ["week-4", "week-3", "week-2", "week-1", "current_week"]:
+        eboxes_alarms[week] = eboxes_alarms[week].apply(lambda x: str(x))
 
     # joins for the dataset eboxes_powerReactivePeak:
     for week in ["week-4", "week-3", "week-2", "week-1", "current_week"]:
