@@ -240,6 +240,7 @@ if __name__ == "__main__":
     links = args.li
     data_dir = args.di
 
+    # Canyelles is not working:
     run_scrapy(
         list_municipalities = municipalities_list,
         list_links_wunderground = links,
