@@ -27,8 +27,10 @@ for municipality in municipalities_list:
 
     print(municipality + " in progress...")
     # Read the data from the folders raw_data and meteo_raw_data:
-    meteo = pd.read_csv(f"{data_dir}/meteo_raw_data/meteo_{municipality}.csv")
+    meteo = pd.read_csv(f"{data_dir}/meteo_raw_data/new_meteo_{municipality}.csv")
     print("meteo read!")
+    print(meteo["Date"].min())
+    print(meteo["Date"].max())
     # The column info_value has mixed types and returns an error when reading it in the case of Illora. Since we don't need this column
     # we simply drop it
     lights_alarms = pd.read_csv(f"{data_dir}/raw_data/{municipality}_lights_alarms.csv", usecols=lambda column: column != "info_value")
@@ -46,12 +48,12 @@ for municipality in municipalities_list:
 
     # First we call the function return_meteo_filter_dates to get date_min and date_max
     # for the first meteo preprocess:
-    meteo_date_min, meteo_date_max = return_meteo_filter_dates(municipality)
+    # meteo_date_min, meteo_date_max = return_meteo_filter_dates(municipality)
     meteo = first_meteo_preprocess(
         meteo = meteo,
-        filter_dates = True,
-        date_min = meteo_date_min,
-        date_max = meteo_date_max
+        filter_dates = False,
+        # date_min = meteo_date_min,
+        # date_max = meteo_date_max
     )
     print("Meteo first preprocessed len: " + str(len(meteo)))
 
@@ -126,5 +128,5 @@ print(len(out_lights))
 print("Out eboxes len:")
 print(len(out_eboxes))
 
-out_lights.to_csv("preprocessing_results/out_lights.csv")
-out_eboxes.to_csv("preprocessing_results/out_boxes.csv")
+out_lights.to_csv(f"{data_dir}/preprocessing_results/out_lights.csv")
+out_eboxes.to_csv(f"{data_dir}/preprocessing_results/out_eboxes.csv")

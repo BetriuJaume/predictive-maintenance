@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+from preprocessing_functions.utils_preprocessing import return_monday
 
 def farenheit_to_celsius(degrees_farenheit: float) -> float:
 
@@ -13,7 +14,7 @@ def first_meteo_preprocess(meteo: pd.DataFrame, filter_dates: bool = False, date
     filter some strange dates that might appear (Especialy for the training).
     """
     
-    meteo.drop("col_0", axis=1, inplace=True)
+    meteo.drop("Unnamed: 0", axis=1, inplace=True)
 
     meteo["Temp_max"] = meteo["Temp_max"].apply(farenheit_to_celsius)
     meteo["Temp_min"] = meteo["Temp_min"].apply(farenheit_to_celsius)
@@ -68,5 +69,8 @@ def meteo_groupby(meteo: pd.DataFrame) -> pd.DataFrame:
     grouped_df.reset_index(inplace=True)
     grouped_df = grouped_df.rename(columns={'Date_min': 'dated'})
     grouped_df = grouped_df.drop('Week', axis=1)
+
+    # Get the dates to monday to do the join after:
+    # grouped_df["dated"] = grouped_df["dated"].apply(lambda x: return_monday(x))
 
     return grouped_df

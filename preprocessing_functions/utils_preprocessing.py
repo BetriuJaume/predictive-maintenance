@@ -14,9 +14,9 @@ def return_meteo_filter_dates(municipality: str) -> tuple[str]:
     """
 
     municip_dates = {
-        "mejorada": ("2015-06-08", "2100-01-01"),
-        "illora": ("2018-01-01", "2100-01-01"),
-        "canyelles": ("2018-12-31", "2100-01-01")
+        "mejorada": ("2014-01-01", "2100-01-01"),
+        "illora": ("2014-01-01", "2100-01-01"),
+        "canyelles": ("2014-01-01", "2100-01-01")
     }
 
     if municipality in municip_dates.keys():

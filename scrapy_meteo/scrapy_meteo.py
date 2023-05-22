@@ -215,12 +215,12 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--di", "--meteo_data_folders_directory", help="Provide the local directory on your machine where you want to store the scraped data. Example: /home/leibniz/Desktop/IHMAN/meteo_raw_data")
-    parser.add_argument("--mu", "--list_municipalities", help="List of the municipalities the user wants to scrap", nargs='+', default=["illora", "canyelles", "mejorada"])
+    parser.add_argument("--mu", "--list_municipalities", help="List of the municipalities the user wants to scrap", nargs='+', default=["illora", "mejorada", "canyelles"])
     parser.add_argument(
         "--dr", 
         "--date_ranges_dict", 
         help = "Pass in dictionary form the range of dates for each one of the municipalities. See default value for example", 
-        default="{'illora': ('2015-01-01', '2023-01-01'), 'canyelles': ('2015-01-01', '2023-01-01'), 'mejorada': ('2014-01-01', '2023-01-01')}"
+        default="{'illora': ('2015-01-01', '2023-04-01'), 'mejorada': ('2014-01-01', '2023-04-01'), 'canyelles': ('2015-01-01', '2023-04-01')}"
     )
     parser.add_argument(
         "--li",
@@ -228,9 +228,9 @@ if __name__ == "__main__":
         help = "List of data directories",
         nargs = '+', 
         default = [
-            "https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/",
-            "https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/", 
-            "https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/"
+            "https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/", 
+            "https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/",
+            "https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/"
         ]
     )
 
