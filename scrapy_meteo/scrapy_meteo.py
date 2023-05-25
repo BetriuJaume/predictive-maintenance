@@ -182,7 +182,9 @@ def return_years_months(min_date: str, max_date: str) -> dict:
 
     dict_r = dict()
     for yr in years_in_between:
-        if yr == min_year:
+        if min_year == max_year:
+            dict_r[yr] = list(range(min_month, max_month +1))
+        elif yr == min_year:
             #  If we are looking at the first year we just need the month untill the last month (month 12)
             dict_r[yr] = list(range(min_month, 12 + 1))
         elif yr == max_year:

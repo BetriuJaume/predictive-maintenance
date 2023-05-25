@@ -40,37 +40,32 @@ def meteo_groupby(meteo: pd.DataFrame) -> pd.DataFrame:
     # Convert the row Date to datetime:
     meteo["Date"] = pd.to_datetime(meteo["Date"])
 
-    # Create a column with the week number since the first date:
-    meteo['Week'] = (meteo['Date'] - meteo['Date'].iloc[0]).dt.days // 7
-
-    grouped_df = meteo.groupby('Week').agg(
-                                        {
-                                            'Temp_max':['max'],
-                                            'Temp_avg':['mean', 'std'],
-                                            'Temp_min':['min'],
-                                            'Dew_max':['max'],
-                                            'Dew_avg':['mean', 'std'],
-                                            'Dew_min':['min'],
-                                            'Hum_max':['max'],
-                                            'Hum_avg':['mean', 'std'],
-                                            'Hum_min':['min'],
-                                            'Wind_max':['max'],
-                                            'Wind_avg':['mean', 'std'],
-                                            'Wind_min':['min'],
-                                            'Pres_max':['max'],
-                                            'Pres_avg':['mean', 'std'],
-                                            'Pres_min':['min'],
-                                            'Precipitation':['mean', 'sum'],
-                                            'Date':['min']
-                                        }, axis=1
-                                    )
+    grouped_df = meteo.groupby(pd.Grouper(key="Date", freq="W")).agg(
+                                    {
+                                        'Temp_max':['max'],
+                                        'Temp_avg':['mean', 'std'],
+                                        'Temp_min':['min'],
+                                        'Dew_max':['max'],
+                                        'Dew_avg':['mean', 'std'],
+                                        'Dew_min':['min'],
+                                        'Hum_max':['max'],
+                                        'Hum_avg':['mean', 'std'],
+                                        'Hum_min':['min'],
+                                        'Wind_max':['max'],
+                                        'Wind_avg':['mean', 'std'],
+                                        'Wind_min':['min'],
+                                        'Pres_max':['max'],
+                                        'Pres_avg':['mean', 'std'],
+                                        'Pres_min':['min'],
+                                        'Precipitation':['mean', 'sum'],
+                                    }, axis=1
+                                )
 
     grouped_df.columns = grouped_df.columns.map('_'.join).str.strip('_')
     grouped_df.reset_index(inplace=True)
-    grouped_df = grouped_df.rename(columns={'Date_min': 'dated'})
-    grouped_df = grouped_df.drop('Week', axis=1)
+    grouped_df = grouped_df.rename(columns={"Date": "dated"})
 
     # Get the dates to monday to do the join after:
-    # grouped_df["dated"] = grouped_df["dated"].apply(lambda x: return_monday(x))
+    grouped_df["dated"] = grouped_df["dated"].apply(lambda x: return_monday(x))
 
     return grouped_df

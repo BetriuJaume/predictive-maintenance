@@ -3,7 +3,6 @@ import numpy as np
 from sklearn.ensemble import AdaBoostClassifier
 from typing import List
 
-
 def calculate_accuracies(y: pd.DataFrame) -> dict:
     """
     Takes as input a dataframe with two columns. The first one with the real values and

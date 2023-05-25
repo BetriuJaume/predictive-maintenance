@@ -29,6 +29,7 @@ for municipality in municipalities_list:
     # Read the data from the folders raw_data and meteo_raw_data:
     meteo = pd.read_csv(f"{data_dir}/meteo_raw_data/new_meteo_{municipality}.csv")
     print("meteo read!")
+    print(f"Min and max meteo dates for {municipality}")
     print(meteo["Date"].min())
     print(meteo["Date"].max())
     # The column info_value has mixed types and returns an error when reading it in the case of Illora. Since we don't need this column
