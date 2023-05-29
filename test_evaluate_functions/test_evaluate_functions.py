@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import AdaBoostClassifier
 from typing import List
+import pickle
 
 def calculate_accuracies(y: pd.DataFrame) -> dict:
     """

@@ -1,7 +1,7 @@
 import pickle
 import pandas as pd
 import argparse
-from predictive_models.predictive_models_functions import adboc_predict
+from predictive_models.predictive_models_functions import make_predictions
 from preprocessing_functions.functions_preprocessing_alarms import first_eboxes_preprocess, first_lights_preprocess, big_preprocess_eboxes, big_preprocess_lights
 from preprocessing_functions.functions_preprocessing_readings import pre_power, pre_power_peak
 from preprocessing_functions.functions_preprocessing_meteo import first_meteo_preprocess, meteo_groupby
@@ -27,6 +27,7 @@ predicting_min = args.da[0]
 predicting_max = args.da[1]
 model_type = args.mo
 
+print("Inputed date range:")
 print(predicting_min)
 print(predicting_max)
 
@@ -75,91 +76,46 @@ light_alarms = join_light_alarms_readings_meteo(
     meteo = meteo
 )
 
-# Depending on model_type we do predictions with one model or the other:
-model_type = "adboc"
+# Untill this point we have just considered the lights that have had an error in the last 4 weeks. 
+# We should consider too all the other alarms that have no errors in the last 4 weeks and put them
+# in a dataframe format identical to the light-alarms dataframe. This way we will be able to do predictionns
+# for all the lights in the city.
 
-# In this case we don't use the ada boost combined predictor and the model will take into accout the readings. This
-# model has an overall better accuracy than the adboc but fails to detect the sudden errors
-if model_type == "default":
-    with open("predictive_models/ada_model_readings.pk1", "rb") as file:
-        ada_model = pickle.load(file)
-    with open("predictive_models/ada_prob_readings.pk1", "rb") as file:
-        prob_ada_model = pickle.load(file)["prob_ada_model"]
-    
-    df = light_alarms.copy()
+# Let's get the nodes that have not suffered any alarms in the last weeks:
+light_nodes = nodes.loc[nodes["type"] == "light"]
+non_error_lights_nodes = light_nodes.loc[~light_nodes["id"].isin(light_alarms["id"])]
 
-    # Drop some usless columns for the model:
-    drop_cols = [
-        col for col in df.columns if
-            (col in ["lat", "lon"]) | 
-            (col == "Unnamed: 0") |
-            (col.startswith("week")) |
-            (col == "current_week") |
-            (col == "type") |
-            (col == "ebox_id") |
-            (col == "location")
-    ]
-    df = df.drop(drop_cols, axis=1)
+# Now we have to build a dataframe with the same structure as light_alarms for this non_error_lights:
+non_error_lights = pd.DataFrame(
+    {
+        "id": non_error_lights_nodes["id"],
+        "week-4": light_alarms["week-4"][0],
+        "hours_week-4": 0,
+        "week-3": light_alarms["week-3"][0],
+        "hours_week-3": 0,
+        "week-2": light_alarms["week-2"][0],
+        "hours_week-2": 0,
+        "week-1": light_alarms["week-1"][0],
+        "hours_week-1": 0,
+        "current_week": light_alarms["current_week"][0],
+        "hours_current_week": 0,
+        "ebox_id": non_error_lights_nodes["ebox_id"],
+        "lat": non_error_lights_nodes["lat"],
+        "lon": non_error_lights_nodes["lon"]
+    }
+)
+# Create the dataframe ready for the model:
 
-    # Interpolate some left missing values:
-    df = df.fillna(df.mean(numeric_only=True))
+non_error_lights = join_light_alarms_readings_meteo(
+    light_errors = non_error_lights,
+    eboxes_powerReactivePeak = powerReactivePeak,
+    eboxes_powerReactive = powerReactive,
+    eboxes_powerActive = powerActive,
+    eboxes_powerActivePeak = powerActivePeak,
+    meteo = meteo
+)
 
-    predictions = ada_model.predict_proba(df.drop("id", axis=1))[:, 1]
-
-    predictions_out = pd.DataFrame(
-        {
-            "id": df["id"],
-            "pred": predictions
-        }
-    )
-
-    print("Predictions:")
-    print("Probability threshold recommended for this model: " + str(prob_ada_model))
-    print(predictions_out)
-
-# In this case we will use the adboc model. This model has a worse overall accuracy than the default but has a better chance 
-# at dettecting sudden errors. The model does not use the readings in this case.
-if model_type == "adboc":
-    with open("predictive_models/ada_model.pk1", "rb") as file:
-        ada_model = pickle.load(file)
-    with open("predictive_models/ada_sudden_model.pk1", "rb") as file:
-        ada_sudden_model = pickle.load(file)
-    with open("predictive_models/ada_prob.pk1", "rb") as file:
-        probs_dict = pickle.load(file)
-        prob_ada_model = probs_dict["prob_ada_model"]
-        prob_sudden_model = probs_dict["prob_sudden_model"]
-    
-    df = light_alarms.copy()
-    drop_cols = [
-                col for col in df.columns if 
-                (col.startswith("power")) | (col.startswith("Active")) | (col.startswith("Reactive") | 
-                (col in ["lat", "lon"])) | 
-                (col == "Unnamed: 0") |
-                (col.startswith("week")) |
-                (col == "current_week") |
-                (col == "type") |
-                (col == "ebox_id") |
-                (col == "location")
-            ]
-    df = df.drop(drop_cols, axis=1)
-    df = df.fillna(df.mean(numeric_only=True))
-
-    predictions = adboc_predict(
-        df = df,
-        ada_model = ada_model,
-        ada_sudden_model = ada_sudden_model,
-        prob_threshold_ada_model = prob_ada_model,
-        prob_threshold_ada_sudden_model = prob_sudden_model,
-    )
-
-    predictions_out = pd.DataFrame(
-        {
-            "id": predictions.keys(),
-            "pred": predictions.values()
-        }
-    )
-
-    print("Predictions:")
-    print("Probability threshold recommended for the model ada_model: " + str(prob_ada_model))
-    print("Probability threshold recommended for the model ada_sudden_model: " + str(prob_sudden_model))
-    print(predictions_out)
+print("Predictions for luminarire with errors in the last weeks:")
+make_predictions(light_alarms, model_type)
+print("Predictions for luminarire with no errors in the last weeks:")
+make_predictions(non_error_lights, model_type)
