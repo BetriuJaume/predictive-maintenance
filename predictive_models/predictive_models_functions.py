@@ -95,7 +95,7 @@ def adboc_predict(df: pd.DataFrame, ada_model: AdaBoostClassifier, ada_sudden_mo
     
     return predictions
 
-def make_predictions(light_alarms: pd.DataFrame, model_type: str = "default") -> None:
+def make_predictions_lights(light_alarms: pd.DataFrame, model_type: str = "default") -> None:
 
     # In this case we don't use the ada boost combined predictor and the model will take into accout the readings. This
     # model has an overall better accuracy than the adboc but fails to detect the sudden errors
@@ -133,7 +133,7 @@ def make_predictions(light_alarms: pd.DataFrame, model_type: str = "default") ->
         )
 
         print("Predictions:")
-        print("Probability threshold recommended for this model: " + str(prob_ada_model))
+        print("Probability threshold recommended for this model for lights: " + str(prob_ada_model))
         print(predictions_out)
 
     # In this case we will use the adboc model. This model has a worse overall accuracy than the default but has a better chance 
@@ -179,6 +179,42 @@ def make_predictions(light_alarms: pd.DataFrame, model_type: str = "default") ->
         )
 
         print("Predictions:")
-        print("Probability threshold recommended for the model ada_model: " + str(prob_ada_model))
-        print("Probability threshold recommended for the model ada_sudden_model: " + str(prob_sudden_model))
+        print("Probability threshold recommended for the model ada_model for lights: " + str(prob_ada_model))
+        print("Probability threshold recommended for the model ada_sudden_model for lights: " + str(prob_sudden_model))
         print(predictions_out)
+
+def make_predictions_eboxes(eboxes_alarms: pd.DataFrame) -> None:
+
+    with open("predictive_models/ada_model_eboxes.pk1", "rb") as file:
+        ada_model = pickle.load(file)
+
+    with open("predictive_models/ada_prob_eboxes.pk1", "rb") as file:
+        probs_dict = pickle.load(file)
+        prob_ada_model = probs_dict["prob_ada_model"]
+    
+    df = eboxes_alarms.copy()
+    drop_cols = [
+                col for col in df.columns if 
+                (col.startswith("power")) | (col.startswith("Active")) | (col.startswith("Reactive") | 
+                (col in ["lat", "lon"])) | 
+                (col == "Unnamed: 0") |
+                (col.startswith("week")) |
+                (col == "current_week") |
+                (col == "type") |
+                (col == "location")
+            ]
+    df = df.drop(drop_cols, axis=1)
+    df = df.fillna(df.mean(numeric_only=True))
+
+    predictions = ada_model.predict_proba(df.drop("id", axis=1))[:, 1]
+
+    predictions_out = pd.DataFrame(
+        {
+            "id": df["id"],
+            "pred": predictions
+        }
+    )
+
+    print("Predictions:")
+    print("Probability threshold recommended for this model for eboxes: " + str(prob_ada_model))
+    print(predictions_out)

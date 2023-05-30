@@ -33,6 +33,25 @@ def variable_importance(ada_model: AdaBoostClassifier, trained_columns: List[int
     
     return variable_importance_df
 
+def return_variable_importance(ada_model: AdaBoostClassifier, trained_columns: List[int]) -> pd.DataFrame:
+    """
+    The function variable_importances is deprecated because of the append function of the dataframe. Use this one instead.
+    Takes the pretrained model and a list of the columns used to train the model and returns a dataframe 
+    with the importance of all the variables in the model
+    """
+    
+    variable_importance_df = pd.DataFrame({"variable": [], "importance": []})
+    for i, importance in enumerate(ada_model.feature_importances_):
+        row_to_append = {"variable": trained_columns[i], "importance": importance}
+        variable_importance_df = pd.concat(
+            [
+                variable_importance_df,
+                pd.DataFrame([row_to_append])
+            ]
+        )
+    
+    return variable_importance_df
+
 def test_model(model: AdaBoostClassifier, x: pd.DataFrame, y: pd.DataFrame, prob_threshold: float = 0.5) -> dict:
     """
     Takes the pretrained model, the x and y dataframes and returns the accuracies of the predictions

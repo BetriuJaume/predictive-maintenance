@@ -94,7 +94,7 @@ for municipality in municipalities_list:
     print("Light alarms and nodes len: " + str(len(lights_alarms)))
 
     # Join readings, alarms and meteo:
-    # You have to run the function join_eboxes_readings_meteo before runing join_light_alarms_readings_meteo
+    # You have to run the function join_eboxes_readings_meteo before running join_light_alarms_readings_meteo
     # because this last function modifies the datasets of the readings. In case you run the lights join
     # first the code is going to return a Key error.
     eboxes_alarms = join_eboxes_alarms_readings_meteo(

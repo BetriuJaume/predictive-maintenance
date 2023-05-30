@@ -1,7 +1,8 @@
 import pickle
 import pandas as pd
 import argparse
-from predictive_models.predictive_models_functions import make_predictions
+from preprocessing_functions.utils_preprocessing import return_monday
+from predictive_models.predictive_models_functions import make_predictions_lights, make_predictions_eboxes
 from preprocessing_functions.functions_preprocessing_alarms import first_eboxes_preprocess, first_lights_preprocess, big_preprocess_eboxes, big_preprocess_lights
 from preprocessing_functions.functions_preprocessing_readings import pre_power, pre_power_peak
 from preprocessing_functions.functions_preprocessing_meteo import first_meteo_preprocess, meteo_groupby
@@ -11,16 +12,22 @@ pd.options.mode.chained_assignment = None
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--di", "--raw_data_folders_directory", help="Provide the local directory on your machine of the folders raw_data and meteo_raw_data. Example: /home/leibniz/Desktop/IHMAN")
-# About this dates it will be better to dettect the current day where we are (sunday or any other day from the week) and get the data bia sql from the database. For now passing the dates as an argument
+# About this dates it will be better to detect the current day where we are (sunday or any other day from the week) and get the data bia sql from the database. For now passing the dates as an argument
 # is how we will get the date ranges but it is a temporal fix
 parser.add_argument("--da", "--min_max_dates", help="Provide the min and max dates of the data you are doing predictions", nargs="+", default=[])
-parser.add_argument("--mo", "--model", help="Indicate the model you want to use for predictions. 'adboc' for a model that does not use the readings or 'default' for a model that does use the readings", default="default")
+parser.add_argument("--mo", "--model", help="Indicate the model you want to use for predictions of lights. 'adboc' for a model that does not use the readings or 'default' for a model that does use the readings", default="default")
 
 args = parser.parse_args()
 
 # Raise an error in case that the user has not specified the date range:
 if len(args.da) == 0:
     raise Exception("Error: You have to specify the date range of your data")
+
+# Verify that the dates are indeed the Monday from the first date and the Sunday of the last week:
+if pd.to_datetime(args.da[0]).weekday() != 0:
+    raise Exception("Error: The first date that you have specified in the arguments is not a Monday")
+if pd.to_datetime(args.da[1]).weekday() != 6:
+    raise Exception("Error: The second date that you have specified in the arguments is not a Sunday")
 
 data_dir = args.di
 predicting_min = args.da[0]
@@ -56,25 +63,125 @@ meteo = first_meteo_preprocess(
 
 meteo = meteo_groupby(meteo)
 
-light_alarms = first_lights_preprocess(light_alarms, for_predicting=True)
+eboxes_alarms = first_eboxes_preprocess(eboxes_alarms, for_predicting=True)
 
-light_alarms = big_preprocess_lights(
-    light_alarms = light_alarms,
-    for_predicting = True,
-    predicting_min_date = predicting_min,
-    predicting_max_date = predicting_max
+# Here we want to create a boolean variable that indicates if the dataframe eboxes_alarms is empty.
+# This can happen when there are no registered "brdpower" errors in the last 5 weeks. If we don't 
+# take into account this, it can happend that you end up feeding the function big_preprocess an empty
+# dataframe wich will result in an error.
+eboxes_empty = (len(eboxes_alarms) == 0)
+
+if not eboxes_empty:
+    eboxes_alarms = big_preprocess_eboxes(
+        eboxes_alarms = eboxes_alarms,
+        for_predicting = True,
+        predicting_min_date = predicting_min,
+        predicting_max_date = predicting_max
+    )
+
+    eboxes_alarms = join_eboxes_alarms_readings_meteo(
+        eboxes_alarms = eboxes_alarms,
+        eboxes_powerReactivePeak = powerReactivePeak,
+        eboxes_powerReactive = powerReactive,
+        eboxes_powerActive = powerActive,
+        eboxes_powerActivePeak = powerActivePeak,
+        meteo = meteo
+    )
+else:
+    # If the eboxes_alarms dataframe is indeed empty we will have errors in a few lines when creating
+    # the dataframe for the non_error_eboxes. This error will appear because for creating the non_error_eboxes
+    # dataframe we use the weeks from the dataframe eboxes_alarms (eboxes_alarms["week-i"][0]). In the case 
+    # that the dataframe is empty we have not executed the function big_preprocess_eboxes and the columns
+    # "week-i" do not exist
+
+    # The solution will simply be to generate the dates with a date range and create new columns for the
+    # empty eboxes_alarms dataframe with the dates generated so the code can take this dates for generating
+    # the non_error_eboxes dataframe.
+
+    dates_range = pd.date_range(start=predicting_min, end=predicting_max, freq="W")
+    dates_range = [str(return_monday(elem)) for elem in dates_range]
+
+    # Rewrite the dataframe to use it later. Note that we add too an id column for in a few lines generating
+    # the non_error_eboxes_nodes .
+    eboxes_alarms = pd.DataFrame(
+        {"id": [None], "week-4": [dates_range[0]], "week-3": [dates_range[1]], "week-2": [dates_range[2]], "week-1": [dates_range[3]], "current_week": [dates_range[4]]}
+    )
+
+    
+# Untill this point we have just considered the eboxes that have had an error in the last 4 weeks. 
+# We should consider too all the other alarms that have no errors in the last 4 weeks and put them
+# in a dataframe format identical to the eboxes-alarms dataframe. This way we will be able to do predictionns
+# for all the eboxes in the city.
+
+# Let's get the nodes that have not suffered any alarms in the last weeks:
+eboxes_nodes = nodes.loc[nodes["type"] == "box"]
+non_error_eboxes_nodes = eboxes_nodes.loc[~eboxes_nodes["id"].isin(eboxes_alarms["id"])]
+
+# Now we have to build a dataframe with the same structure as light_eboxes for this non_error_eboxes:
+non_error_eboxes = pd.DataFrame(
+    {
+        "id": non_error_eboxes_nodes["id"],
+        "week-4": eboxes_alarms["week-4"][0],
+        "hours_week-4": 0,
+        "week-3": eboxes_alarms["week-3"][0],
+        "hours_week-3": 0,
+        "week-2": eboxes_alarms["week-2"][0],
+        "hours_week-2": 0,
+        "week-1": eboxes_alarms["week-1"][0],
+        "hours_week-1": 0,
+        "current_week": eboxes_alarms["current_week"][0],
+        "hours_current_week": 0,
+        "lat": non_error_eboxes_nodes["lat"],
+        "lon": non_error_eboxes_nodes["lon"]
+    }
 )
+# Create the dataframe ready for the model:
 
-light_alarms = pd.merge(light_alarms, nodes, on="id", how="left")
-
-light_alarms = join_light_alarms_readings_meteo(
-    light_errors = light_alarms,
+non_error_eboxes = join_eboxes_alarms_readings_meteo(
+    eboxes_alarms = non_error_eboxes,
     eboxes_powerReactivePeak = powerReactivePeak,
     eboxes_powerReactive = powerReactive,
     eboxes_powerActive = powerActive,
     eboxes_powerActivePeak = powerActivePeak,
     meteo = meteo
 )
+
+# Now for the the lights:
+
+light_alarms = first_lights_preprocess(light_alarms, for_predicting=True)
+
+# In the same way as the eboxes, we create a boolean variable to control if the light_alarms dataframe is empty
+lights_empty = (len(light_alarms) == 0)
+
+if not lights_empty:
+    light_alarms = big_preprocess_lights(
+        light_alarms = light_alarms,
+        for_predicting = True,
+        predicting_min_date = predicting_min,
+        predicting_max_date = predicting_max
+    )
+
+    light_alarms = pd.merge(light_alarms, nodes, on="id", how="left")
+
+    light_alarms = join_light_alarms_readings_meteo(
+        light_errors = light_alarms,
+        eboxes_powerReactivePeak = powerReactivePeak,
+        eboxes_powerReactive = powerReactive,
+        eboxes_powerActive = powerActive,
+        eboxes_powerActivePeak = powerActivePeak,
+        meteo = meteo
+    )
+else:
+    # The same that we did for the eboxes must be done ofr the lights:
+
+    dates_range = pd.date_range(start=predicting_min, end=predicting_max, freq="W")
+    dates_range = [str(return_monday(elem)) for elem in dates_range]
+
+    # Rewrite the dataframe to use it later. Note that we add too an id column for in a few lines generating
+    # the non_error_eboxes_nodes .
+    light_alarms = pd.DataFrame(
+        {"id": [None], "week-4": [dates_range[0]], "week-3": [dates_range[1]], "week-2": [dates_range[2]], "week-1": [dates_range[3]], "current_week": [dates_range[4]]}
+    )
 
 # Untill this point we have just considered the lights that have had an error in the last 4 weeks. 
 # We should consider too all the other alarms that have no errors in the last 4 weeks and put them
@@ -115,7 +222,22 @@ non_error_lights = join_light_alarms_readings_meteo(
     meteo = meteo
 )
 
-print("Predictions for luminarire with errors in the last weeks:")
-make_predictions(light_alarms, model_type)
+# Generate the predictions:
+if not lights_empty:
+    print("Predictions for luminarire with errors in the last weeks:")
+    make_predictions_lights(light_alarms, model_type)
+else:
+    print("There have been no lighterr or lightcomm errors registered in the last 5 weeks")
+
 print("Predictions for luminarire with no errors in the last weeks:")
-make_predictions(non_error_lights, model_type)
+make_predictions_lights(non_error_lights, model_type)
+
+if not eboxes_empty:
+    print("Predictions for eboxes with errors in the last weeks:")
+    make_predictions_eboxes(eboxes_alarms)
+else:
+    print("There have been no brdpower errors registered in the last 5 weeks")
+
+print("Predictions for eboxes with no errors in the last weeks:")
+make_predictions_eboxes(non_error_eboxes)
+
