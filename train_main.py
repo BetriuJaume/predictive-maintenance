@@ -33,6 +33,7 @@ if (device == "lights") & (model_type is None):
 
 if device == "lights":
     # read the data from the output of the preprocessing_main.py
+    print("Reading data...")
     dff = pd.read_csv(f"{data_dir}/preprocessing_results/out_lights.csv")
     print("Data reading done!")
 
@@ -66,6 +67,7 @@ if device == "lights":
         df = df.drop(drop_cols, axis=1)
 
         # Interpolate some left missing values:
+        print("Interpolating remaining nan values...")
         df = df.fillna(df.mean(numeric_only=True))
 
         df = calculate_binary_variables(df)
@@ -344,7 +346,104 @@ if device == "lights":
                 
                 print("Models stored successfully")
 
+if device == "eboxes":
+    # read the data from the output of the preprocessing_main.py
+    print("Reading data...")
+    dff = pd.read_csv("/home/leibniz/Desktop/IHMAN/preprocessing_results/out_eboxes.csv")
+    print("Data reading done!")
 
+    # In the case of eboxes we have seen that using the adboc predictor does not give us good results. So in the eboxes case
+    # we have one option to train a model
+
+    hparams = {
+            "max_depth_tree": 1,
+            "n_estimators": 10,
+            "lr": 0.5,
+            "prob_threshold": 0.48
+        }
+
+    # We will drop all the columns readings and lon and lat:
+    drop_cols = [
+                    col for col in dff.columns if 
+                    (col.startswith("power")) | (col.startswith("Active")) | (col.startswith("Reactive") | 
+                    (col in ["lat", "lon"])) | 
+                    (col == "Unnamed: 0") |
+                    (col.startswith("week")) |
+                    (col == "type") |
+                    (col == "ebox_id") |
+                    (col == "location") |
+                    (col == "id")
+                ]
+    df = dff.drop(drop_cols, axis=1)
+
+    # Interpolate the remaining nana values:
+    print("Interpolating remaining nan values...")
+    df = df.fillna(df.mean(numeric_only=True))
+
+    print("Split information:")
+    df = calculate_binary_variables(df)
+    # Preprocessing and split:
+    df["current_week"] = pd.to_datetime(df["current_week"])
+    train, validation, test = split(df, n_weeks=80)
+
+    cols_to_train = df.drop(["current_week", "hours_next_four_weeks", "error_next_four_weeks", "hours_week+1", "hours_week+2", "hours_week+3", "hours_week+4"], axis=1).columns
+    x_train, y_train = split_x_y(train, cols_to_train)
+    x_validation, y_validation = split_x_y(validation, cols_to_train)
+    x_test, y_test = split_x_y(test, cols_to_train)
+
+    print("Training model...")
+    ada_model = train_ada_boost(
+        max_depth_tree = hparams["max_depth_tree"],
+        n_estimators = hparams["n_estimators"],
+        lr = hparams["lr"],
+        x  = x_train,
+        y = y_train
+    )
+    
+    print("Validation results:")
+    test_model(
+        model = ada_model,
+        x = x_validation, 
+        y = y_validation,
+        prob_threshold = hparams["prob_threshold"]
+    )
+
+    print("Test results:")
+    test_model(
+        model = ada_model,
+        x = x_test, 
+        y = y_test,
+        prob_threshold = hparams["prob_threshold"]
+    )
+
+    print("Variable importance of the trained model:")
+
+    feature_importances = return_variable_importance(ada_model, cols_to_train)
+    print(feature_importances.loc[feature_importances["importance"] != 0])
+
+    # Store the model if the user wants to:
+
+    if store:
+        if rewrite:
+            with open("predictive_models/ada_model_eboxes.pk1", "wb") as file:
+                pickle.dump(ada_model, file)
+
+            # Save the probability thresholds:
+            with open("predictive_models/ada_prob_eboxes.pk1", "wb") as file:
+                pickle.dump({"prob_ada_model": hparams["prob_threshold"]}, file)
+            
+            print("Model stored successfully!")
+        else:
+            # If we do not want to rewrite the last models we will just add the prefix "new" at the end
+
+            with open("predictive_models/ada_model_eboxes_new.pk1", "wb") as file:
+                pickle.dump(ada_model, file)
+
+            # Save the probability thresholds:
+            with open("predictive_models/ada_prob_eboxes_new.pk1", "wb") as file:
+                pickle.dump({"prob_ada_model": hparams["prob_threshold"]}, file)
+
+            print("Model stored successfully!")
 
 
 
