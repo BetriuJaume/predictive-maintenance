@@ -1,0 +1,6 @@
+numpy
+pandas
+sklearn
+datetime
+selenium
+webdriver_manager
