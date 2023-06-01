@@ -48,7 +48,7 @@ powerActivePeak = pd.read_csv(f"{data_dir}/data_to_predict/powerActivePeak.csv")
 powerReactivePeak = pd.read_csv(f"{data_dir}/data_to_predict/powerActivePeak.csv")
 
 # meteo here:
-meteo = pd.read_csv(f"{data_dir}/data_to_predict/new_meteo_mejorada.csv")
+meteo = pd.read_csv(f"{data_dir}/data_to_predict/new_meteo.csv")
 
 # Almost the same preprocessing as we do on preparing the data for training with some minor changes.
 # For example in the alarms preprocessing functions we have to specify the argument for_predicting
