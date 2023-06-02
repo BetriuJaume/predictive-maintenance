@@ -21,10 +21,14 @@ args = parser.parse_args()
 
 data_dir = args.di
 device = args.de
-store = bool(args.st)
-rewrite = bool(args.rew)
+store = args.st
+rewrite = args.rew
 model_type = args.mo
 
+if store == "True":
+    store = True
+if store == "False":
+    store = False
 
 if device not in ["lights", "eboxes"]:
     raise Exception("Error: Device is a mandatory argument and has to be either 'lights' or 'eboxes'. Write '--de eboxes' or '--de lights'")
@@ -401,20 +405,20 @@ if device == "eboxes":
     )
     
     print("Validation results:")
-    test_model(
+    print(test_model(
         model = ada_model,
         x = x_validation, 
         y = y_validation,
         prob_threshold = hparams["prob_threshold"]
-    )
+    ))
 
     print("Test results:")
-    test_model(
+    print(test_model(
         model = ada_model,
         x = x_test, 
         y = y_test,
         prob_threshold = hparams["prob_threshold"]
-    )
+    ))
 
     print("Variable importance of the trained model:")
 

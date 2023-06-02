@@ -70,7 +70,7 @@ python preprocessing_main.py --di "/home/leibniz/Desktop/IHMAN" --mu illora mejo
 For training the model, you have two options. The first one is to use the step-by-step code in the jupyter notebook model_train.ipynb where there is a clear explanation of each step of the process. If you choose this approach, you will be able to execute grid searches and tune the hyperparameters of the model to better fit your training data. The other option is to train the model with a set of hyperparameters optimized to fit the training dataset composed of data from Illora, Mejorada and Canyelles. If you choose the last option, run the following command in the terminal:
 
 ```
-python --di "/local/directory/folder" --de device --st store --rew rewrite --mo model
+python train_main.py --di "/local/directory/folder" --de device --st store --rew rewrite --mo model
 ```
 Let's take a look at the arguments:
 * ```--di``` is the local directory where you must have the folder preprocessing_results with the output of the preprocessing module.
@@ -82,11 +82,11 @@ Let's take a look at the arguments:
 **Example:** For training a light breakdown prediction model storing the models without rewriting the models, I would run on my machine:
 
 ```
-python --di "/home/leibniz/Desktop/IHMAN" --de "lights" --st True --rew False --mo "adboc"
+python train_main.py --di "/home/leibniz/Desktop/IHMAN" --de "lights" --st True --rew False --mo "adboc"
 ```
 in case I want to train it for eboxes:
 ```
-python --di "/home/leibniz/Desktop/IHMAN" --de "eboxes" --st True --rew False
+python train_main.py --di "/home/leibniz/Desktop/IHMAN" --de "eboxes" --st True --rew False
 ```
 ### Model selection for lights:
 As we have already mentioned, in case that you choose to train a model for lights, we have two options. We can use either the "default" or the "adboc" argument for ```--mo``` to choose between the two. Let's explore the differences:
