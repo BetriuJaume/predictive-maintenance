@@ -29,6 +29,10 @@ if store == "True":
     store = True
 if store == "False":
     store = False
+if rewrite == "True":
+    rewrite = True
+if rewrite == "False":
+    rewrite = False
 
 if device not in ["lights", "eboxes"]:
     raise Exception("Error: Device is a mandatory argument and has to be either 'lights' or 'eboxes'. Write '--de eboxes' or '--de lights'")
