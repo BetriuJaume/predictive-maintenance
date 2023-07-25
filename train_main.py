@@ -147,7 +147,6 @@ if device == "lights":
 
                 print("Model stored successfully!")
 
-
     if model_type == "adboc":
         # Define the dictionary of hyperparameters. Note that this are the hyperparameters that have worked better with the datasets
         # of Canyelles, Illora and Mejorada. For retraining you might want to do a grid search of parameters for your municipality to
@@ -364,11 +363,11 @@ if device == "eboxes":
     # we have one option to train a model
 
     hparams = {
-            "max_depth_tree": 1,
-            "n_estimators": 10,
-            "lr": 0.5,
-            "prob_threshold": 0.48
-        }
+        "max_depth_tree": 1,
+        "n_estimators": 10,
+        "lr": 0.5,
+        "prob_threshold": 0.48
+    }
 
     # We will drop all the columns readings and lon and lat:
     drop_cols = [
