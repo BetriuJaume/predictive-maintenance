@@ -4,7 +4,7 @@ import pickle
 from predictive_models.predictive_models_functions import test_adboc_model
 from test_evaluate_functions.test_evaluate_functions import calculate_accuracies, test_model, variable_importance, return_variable_importance
 from training_functions.training_functions import calculate_binary_variables, split, split_x_y, train_ada_boost, split_easy_and_sudden_errors
-from streamlit_functions.streamlit_functions import run_lights_default_streamlit
+from streamlit_functions.streamlit_functions import run_lights_default_streamlit, run_lights_adboc_streamlit, run_eboxes_streamlit
 import warnings
 from sklearn.exceptions import DataConversionWarning
 import streamlit as st
@@ -30,6 +30,11 @@ with st.form(key="input_form"):
 
     with col2:
         model_type = st.selectbox("Select model type (Only for lights)", ["default", "adboc"])
+        store = st.checkbox(label="Store models", help="Mark if you want the model to be stored once the model is trained. Leave unchecked while doing tests")
+        rewrite = st.checkbox(label="Rewrite models", help="Mark if you want to rewrite the models already stored. Leave unckecked while doing tests")
+
+    if (rewrite) & (not store):
+        st.error("Must store the model in order to rewrite it")
 
     if (device == "eboxes") & (model_type == "adboc"):
         st.error("adboc predictor can only be used for light predictive maintenance")
@@ -46,18 +51,11 @@ if st.session_state["submit_button_clicked"]:
 
     if device == "lights":
         
-        # Read the data
-        with st.spinner(text="Reading data..."):
-            dff = pd.read_csv(f"{data_dir}/preprocessing_results/out_eboxes.csv")
-
         if model_type == "default":
-            run_lights_default_streamlit(dff)
+            run_lights_default_streamlit(data_dir, store, rewrite)
 
         if model_type == "adboc":
-            pass
+            run_lights_adboc_streamlit(data_dir, store, rewrite)
 
     if device == "eboxes":
-
-        # Read the data:
-        with st.spinner(text="Reading data..."):
-            dff = pd.read_csv(f"{data_dir}/preprocessing_results/out_eboxes.csv")
+        run_eboxes_streamlit(data_dir, store, rewrite)

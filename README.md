@@ -19,7 +19,7 @@ Code in the file scrapy_meteo.py of the folder scrapy_meteo. As we have already 
 To execute the scraper, navigate to the folder scrapy_meteo in the repo and run the following in the terminal:
 
 ```
-python scrapy_meteo.py --di "/local/directory/folder" --mu municipalities_list --dr date_ranges --li list_of_links
+python weather_scrapy.py --di "/local/directory/folder" --mu municipalities_list --dr date_ranges --li list_of_links
 ```
 Let's take a look at the arguments:
 * ```--di``` is the local directory of the folder you want to store the data extracted using the scraper.
@@ -29,7 +29,7 @@ Let's take a look at the arguments:
 
 For example, if you want to gather meteorogical information from the Spanish municipalities of Illora, Mejorada and Canyelles you should run this command in the terminal:
 
-```python scrapy_meteo.py --di "/home/leibniz/Desktop/IHMAN/meteo_raw_data" --mu illora mejorada canyelles --dr "{'illora': ('2015-01-01', '2023-04-01'), 'mejorada': ('2014-01-01', '2023-04-01'), 'canyelles': ('2015-01-01', '2023-04-01')}" --li "https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/" "https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/" "https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/"```
+```python weather_scrapy.py --di "/home/leibniz/Desktop/IHMAN/meteo_raw_data" --mu illora mejorada canyelles --dr "{'illora': ('2015-01-01', '2023-04-01'), 'mejorada': ('2014-01-01', '2023-04-01'), 'canyelles': ('2015-01-01', '2023-04-01')}" --li "https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/" "https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/" "https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/"```
 
 The models have been trained with data from these municipalities and in these exact date ranges, so if your objective is to gather the information for replicating the training, some of the arguments have implemented default values to make the syntax more clear, so running the following will gather the same data as the previous command:
 
