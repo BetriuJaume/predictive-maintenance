@@ -360,8 +360,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--li",
         "--scrapy_link",
-        help = "List of data directories",
-        nargs = '+', 
+        help = "List of data directories", 
         default = "{'illora':'https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/', 'mejorada':'https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/','canyelles':'https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/'}"       
     )
 
