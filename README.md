@@ -67,7 +67,9 @@ python preprocessing_main.py --di "/home/leibniz/Desktop/IHMAN" --mu illora mejo
 ```
 
 ## Model training
-For training the model, you have two options. The first one is to use the step-by-step code in the jupyter notebook model_train.ipynb where there is a clear explanation of each step of the process. If you choose this approach, you will be able to execute grid searches and tune the hyperparameters of the model to better fit your training data. The other option is to train the model with a set of hyperparameters optimized to fit the training dataset composed of data from Illora, Mejorada and Canyelles. If you choose the last option, run the following command in the terminal:
+For training the model, you have three options. The first one is to use the step-by-step code in the jupyter notebook model_train.ipynb where there is a clear explanation of each step of the process. If you choose this approach, you will be able to execute grid searches and tune the hyperparameters of the model to better fit your training data. 
+
+The second option is to train the model with a set of hyperparameters optimized to fit the training dataset composed of data from Illora, Mejorada and Canyelles. If you choose the last option, run the following command in the terminal:
 
 ```
 python train_main.py --di "/local/directory/folder" --de device --st store --rew rewrite --mo model
@@ -88,6 +90,17 @@ in case I want to train it for eboxes:
 ```
 python train_main.py --di "/home/leibniz/Desktop/IHMAN" --de "eboxes" --st True --rew False
 ```
+
+The third option, which is also the most user-friendly, involves utilizing the interface provided by the library called "streamlit." By choosing this option, users can easily select the hyperparameters required for training their model.
+
+To utilize streamlit, simply execute the following command:
+
+```
+streamlit run train_streamlit.py
+```
+
+This command will generate a visual interface on the local machine, accessible through a web browser like Chrome. Through this interface, users can conduct tests and fine-tune the hyperparameters of the models to discover the best configuration. Once the optimal model is determined, it can be saved for future usage.
+
 ### Model selection for lights:
 As we have already mentioned, in case that you choose to train a model for lights, we have two options. We can use either the "default" or the "adboc" argument for ```--mo``` to choose between the two. Let's explore the differences:
 * The **"default"** model is trained with the whole dataset and has an impressive overall accuracy for the test data and uses the columns from the electrical readings, such as the powerReactivePeak. The lowlights of this model are that it is trained with less data than the "adboc" model (around 120k rows for test and 120k more for validation) and that it has poor performance on detecting sudden errors. These are the errors that appear out of nowhere without having more than 2 weeks of past errors (For example, a light that suffered 2 hours of breakdown in week-4 and hasn't suffered any error in the following weeks until week+4 where it suffers a 6 hour breakdown would be considered a sudden error).

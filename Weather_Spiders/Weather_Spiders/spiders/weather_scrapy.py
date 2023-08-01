@@ -277,7 +277,7 @@ class WeatherScrapySpider(scrapy.Spider):
             self.weather_logger.info(f'Saving weather data for {municipality}')
 
             # Get the csv file path
-            csv_path = f"{self.data_dir}/new_meteo_{municipality}.csv"
+            csv_path = f"{self.data_dir}/new_meteo_test_{municipality}.csv"
 
             if not self.created_csv[municipality]:
                 # If this is the first time in this run, create the CSV file
@@ -371,7 +371,6 @@ if __name__ == "__main__":
     links = ast.literal_eval(args.li)
     data_dir = args.di
 
-    # Canyelles is not working properly:
     run_scrapy(
         list_municipalities = municipalities_list,
         list_links_wunderground = links,
