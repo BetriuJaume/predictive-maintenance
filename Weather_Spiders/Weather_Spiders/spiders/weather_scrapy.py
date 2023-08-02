@@ -385,7 +385,7 @@ if __name__ == "__main__":
         "--li",
         "--scrapy_link",
         help = "List of data directories", 
-        default = "{'illora':'https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/', 'mejorada':'https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/','canyelles':'https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/'}"       
+        default = "{'illora':'https://www.wunderground.com/history/monthly/es/íllora/ILLORA7/date/', 'mejorada':'https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/','canyelles':'https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/'}"       
     )
 
     args = parser.parse_args()
