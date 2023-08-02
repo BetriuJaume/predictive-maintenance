@@ -8,6 +8,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.remote.remote_connection import LOGGER as selenium_logger
+
 
 #utils
 import datetime
@@ -21,6 +23,7 @@ import time
 import argparse
 import ast
 import os
+import urllib3
 
 #debug
 from scrapy import cmdline
@@ -28,7 +31,18 @@ from scrapy.utils.project import get_project_settings
 from scrapy.crawler import CrawlerProcess
 import logging
 
+# Set the project directory
 PROJECT_DIR = os.path.dirname(os.path.realpath("__file__"))
+
+# Set Selenium logging level to disable debugging messages
+selenium_logger.setLevel(logging.WARNING)
+
+# Set Scrapy logging level to disable debugging messages
+logging.getLogger('scrapy').setLevel(logging.WARNING)
+
+# Set the urllib3 logging level to disable debugging messages
+urllib3_logger = logging.getLogger('urllib3')
+urllib3_logger.setLevel(logging.WARNING)
 
 class WeatherScrapySpider(scrapy.Spider):
     name = 'weather_scrapy'  # Spider name
@@ -76,6 +90,7 @@ class WeatherScrapySpider(scrapy.Spider):
             chrome_options.add_argument("--window-size=1280,720")
             chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0: Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36')
             chrome_options.add_argument('--no_sandbox')
+            chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
             chrome_driver_path = os.path.join(PROJECT_DIR, "chromedriver.exe")
             driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=chrome_driver_path)
             
@@ -315,15 +330,23 @@ class WeatherScrapySpider(scrapy.Spider):
         # Generate a unique timestamp to use in the log file name
         current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
+        # Create a new handler to send messages to the log file
         log_file = os.path.join(self.data_dir, f'weather_scrapy_{current_time}.log')
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(logging.INFO)
 
+        # Create a new handler to send messages to the terminal
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+
+        # Create a formatter to define the format of messages in the file/console
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
 
         # Add the file handler to the logger
         logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
 
         # Save the logger in a class attribute
         self.weather_logger = logger
@@ -335,6 +358,7 @@ def run_scrapy(list_municipalities: list, list_links_wunderground: list, dict_mi
 
     # Configura las opciones de Scrapy y crea la instancia del spider
     settings = get_project_settings()
+    settings.set("LOG_LEVEL", "WARNING")
     process = CrawlerProcess(settings)
 
     # Inicia el proceso de Scrapy pasando el nombre del spider y los argumentos
