@@ -15,27 +15,26 @@ The code has four main functionalities that can be combined depending on the nec
 Let's explain step-by-step how each one of the modules works:
 
 ## Meteo web scrapping
-Code in the file scrapy_meteo.py of the folder scrapy_meteo. As we have already mentioned, this module gathers the raw meteorological context data from the website .
-To execute the scraper, navigate to the folder scrapy_meteo in the repo and run the following in the terminal:
+All the code for this module is located in the folder Weather_Spiders. As we have already mentioned, this module gathers the raw meteorological context data from the website https://www.wunderground.com/. To execute the scraper, run the following in the root of the repository: 
 
 ```
-python weather_scrapy.py --di "/local/directory/folder" --mu municipalities_list --dr date_ranges --li list_of_links
+python Weather_Spiders/Weather_Spiders/spiders/weather_scrapy.py --di "/local/directory/folder" --mu municipalities_list --dr date_ranges --li list_of_links
 ```
 Let's take a look at the arguments:
 * ```--di``` is the local directory of the folder you want to store the data extracted using the scraper.
 * ```--mu``` is a list of the names of the municipalities you want to get the data from.
 * ```--dr``` is a dictionary where the municipality names serve as keys, and the corresponding values are tuples containing the desired date ranges for data extraction. See the example below for clarification.
-* ```--li``` is a list of the links for doing the scraping.
+* ```--li``` is a dictionary that contains the links for doing the scraping.
 
 For example, if you want to gather meteorogical information from the Spanish municipalities of Illora, Mejorada and Canyelles you should run this command in the terminal:
 
-```python weather_scrapy.py --di "/home/leibniz/Desktop/IHMAN/meteo_raw_data" --mu illora mejorada canyelles --dr "{'illora': ('2015-01-01', '2023-04-01'), 'mejorada': ('2014-01-01', '2023-04-01'), 'canyelles': ('2015-01-01', '2023-04-01')}" --li "https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/" "https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/" "https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/"```
+```python Weather_Spiders/Weather_Spiders/spiders/weather_scrapy.py --di "/home/leibniz/Desktop/IHMAN/meteo_raw_data" --mu illora mejorada canyelles --dr "{'illora': ('2015-01-01', '2023-04-01'), 'mejorada': ('2014-01-01', '2023-04-01'), 'canyelles': ('2015-01-01', '2023-04-01')}" --li "{'illora':'https://www.wunderground.com/history/monthly/es/íllora/LEMG/date/', 'mejorada':'https://www.wunderground.com/history/monthly/es/mejorada-del-campo/IMEJOR1/date/','canyelles':'https://www.wunderground.com/history/monthly/es/canyelles/ICANYE10/date/'}"```
 
 The models have been trained with data from these municipalities and in these exact date ranges, so if your objective is to gather the information for replicating the training, some of the arguments have implemented default values to make the syntax more clear, so running the following will gather the same data as the previous command:
 
-```python scrapy_meteo.py --di "/home/leibniz/Desktop/IHMAN/meteo_raw_data"```
+```python Weather_Spiders/Weather_Spiders/spiders/weather_scrapy.py --di "/home/leibniz/Desktop/IHMAN/meteo_raw_data"```
 
-It is common to get errors when running this code because of connection issues ("AttributeError: 'NoneType' object has no attribute 'find_all'"). We recommend trying to run the code again if you get an error. If the error persists after 3 or 4 tries, it will be better to try to get the information in separate dataframes by running one municipality at a time. If the code keeps crashing after multiple tries, we recommend connecting to a more stable wifi connection.
+It is common to get errors when running this code because of connection issues ("AttributeError: 'NoneType' object has no attribute 'find_all'"). We recommend trying to run the code again if you get the error. If the error persists after 3 or 4 tries, it will be better to try to get the information in separate dataframes by running one municipality at a time. If the code keeps crashing after multiple tries, we recommend connecting to a more stable wifi connection.
 
 ## Data preprocessing
 The code in the file preprocessing_main.py executes the preprocessing of all the data and prepares it for the training phase. For the preprocessing to run you must have three subfolders in the same folder somewhere on your local machine. The first one is the folder **raw_data** where you must have the following files:
