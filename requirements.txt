@@ -1,6 +1,6 @@
 numpy
 pandas
-sklearn
+sklearn<0.24.0
 datetime
 selenium
 webdriver_manager

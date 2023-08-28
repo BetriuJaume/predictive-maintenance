@@ -14,7 +14,8 @@ def first_meteo_preprocess(meteo: pd.DataFrame, filter_dates: bool = False, date
     filter some strange dates that might appear (Especialy for the training).
     """
     
-    meteo.drop("Unnamed: 0", axis=1, inplace=True)
+    if "Unnamed: 0" in meteo.columns:
+        meteo.drop("Unnamed: 0", axis=1, inplace=True)
 
     meteo["Temp_max"] = meteo["Temp_max"].apply(farenheit_to_celsius)
     meteo["Temp_min"] = meteo["Temp_min"].apply(farenheit_to_celsius)
