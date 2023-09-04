@@ -1,5 +1,8 @@
 # Documentation predictive maintenance
-This is the repository for the implementation of the predictive maintenance project for INNERGY. 
+This is the repository for the implementation of the predictive maintenance project for INNERGY.
+
+# Data
+All the data for replicating the training can be downloaded at the link: https://drive.google.com/file/d/1tY1QvpDqkHOmff17-vZ4bxItW43mezJ1/view?usp=drive_link
 
 ## Description of the project:
 The main objective of the project is the creation of a machine learning model able to calculate accurate predictions of future breakdowns for both public luminaires (from now on lights) and electric panels (eboxes). The repo contains the whole pipeline, from raw data preprocessing to training the models and making predictions. The code has excellent comments at each step, ensuring a clear understanding of each module.
