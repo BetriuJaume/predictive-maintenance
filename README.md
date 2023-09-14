@@ -1,5 +1,5 @@
 # Documentation predictive maintenance
-This is the repository for the implementation of the predictive maintenance project for INNERGY.
+This is the repository for the implementation of the predictive maintenance project for I-NERGY.
 
 # Data
 All the data for replicating the training can be downloaded at the link: https://drive.google.com/file/d/1tY1QvpDqkHOmff17-vZ4bxItW43mezJ1/view?usp=drive_link
