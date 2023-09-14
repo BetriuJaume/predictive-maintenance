@@ -1,5 +1,5 @@
 # Documentation predictive maintenance
-This is the repository for the implementation of the predictive maintenance project for I-NERGY.
+This is the repository for the implementation of the predictive maintenance project for I-NERGY funded by the European Union's Horizon 2020 Research and Innovation programme under grant agreement No 101016508.
 
 # Data
 All the data for replicating the training can be downloaded at the link: https://drive.google.com/file/d/1tY1QvpDqkHOmff17-vZ4bxItW43mezJ1/view?usp=drive_link
